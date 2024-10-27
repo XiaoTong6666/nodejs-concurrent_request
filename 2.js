@@ -16,23 +16,23 @@ let requestCount = 0;
 
 let numRequests = 114514; //每个线程总共请求数
 let delay = 200;  //间隔多少ms请求一次
-let concurrent = 50; //并发数 
+let concurrent = 50; //并发数
 let processes = os.cpus().length; //进程数
 
 const args = process.argv.slice(2);
 
 for (let i = 0; i < args.length; i += 2) {
-  const key = args[i].replace(/^-+/, ''); 
+  const key = args[i].replace(/^-+/, '');
   const value = args[i + 1];
 
   if (key === 'a') {
-    numRequests = parseInt(value, 10); 
+    numRequests = parseInt(value, 10);
   } else if (key === 't') {
-    delay = parseInt(value, 10); 
+    delay = parseInt(value, 10);
   }else if (key === 'c') {
-   concurrent  = parseInt(value, 10); 
+   concurrent  = parseInt(value, 10);
   }else if (key === 'm') {
-    processes = parseInt(value, 10); 
+    processes = parseInt(value, 10);
   }else if (key === 'h') {
     help = `欢迎使用本脚本
 项目地址github.com/XiaoTong6666/nodejs-concurrent_request
@@ -41,12 +41,12 @@ for (let i = 0; i < args.length; i += 2) {
 -a 每个线程总共请求数（默认114514（恼
 -m 进程数（默认为你CPU核心数量)
 -c 并发数（默认事50)
--t 间隔多少毫秒请求一次（一次的数量由进程数决定（默认200ms）`; 
+-t 间隔多少毫秒请求一次（一次的数量由进程数决定（默认200ms）`;
 	console.log(help);process.exit();
   }
 }
 
-let totalBytesReceived = 0; 
+let totalBytesReceived = 0;
 
 const filePath = './fetch.txt'; // 替换为你的配置文件路径
 try {
@@ -90,7 +90,7 @@ if (url) {
   const parsedUrl = new URL(url);
   const protocol = parsedUrl.protocol === 'https:' ? 'https' : 'http';
   const http = require(protocol);
-  
+
 } else {
   console.error('你的fetch.txt有问题');
   process.exit();
@@ -106,7 +106,7 @@ function sendRequest() {
   const parsedUrl = new URL(url);
   const protocol = parsedUrl.protocol === 'https:' ? 'https' : 'http';
   const http = require(protocol);
-  
+
 const options = {
   hostname: parsedUrl.hostname,
   port: parseInt(parsedUrl.port) || (protocol === 'https' ? 443 : 80),
@@ -120,25 +120,19 @@ const options = {
 
 
   const req = http.request(options, (res) => {
-    let bytesReceived = 0;  
+    let bytesReceived = 0;
 
     res.on('data', (chunk) => {
       bytesReceived += chunk.length;
       totalBytesReceived += chunk.length;
     });
-
     res.on('end', () => {
-		if (win8){successCount++; 
-			console.log(`成功${successCount}字节数:${bytesReceived}`);
-			if (totalRequests>= numRequests) {
-		process.exit();   }
-	}else{
-	const color = bytesReceived === 0 ? '\x1b[31m' : '\x1b[32m';
-		successCount++; 
-      console.log(`成功\x1b[32m${successCount}\x1b[0m字节数: ${color}${bytesReceived}\x1b[0m`);
-	  if (totalRequests>= numRequests) {
-		process.exit();   }
-	}
+      successCount++;
+      const color = win8 || bytesReceived !== 0 ? '\x1b[32m' : '\x1b[31m';
+      console.log(`成功${successCount}字节数: ${color}${bytesReceived}\x1b[0m`);
+      if (totalRequests >= numRequests) {
+        process.exit();
+        }
     });
   });
 
@@ -176,7 +170,6 @@ if (cluster.isMaster) {
 
   setInterval(() => {
     for (let i = 0; i < concurrent; i++) {
-		  
       setTimeout(sendRequest, i * delay);
     }
   }, concurrent * delay);
